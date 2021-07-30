@@ -1,0 +1,11 @@
+name: GitHub Deployments
+description: For creating and managing GitHub Deployments
+author: https://github.com/wellcomecollection
+requirements: []
+configuration:
+  properties:
+    environment:
+      type: string
+    ref:
+      type: string
+  additionalProperties: false

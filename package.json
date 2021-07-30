@@ -1,0 +1,39 @@
+{
+  "name": "github-deployments-buildkite-plugin",
+  "version": "1.0.0",
+  "main": "src/index.ts",
+  "bin": "dist/index.js",
+  "type": "module",
+  "repository": "git@github.com:wellcomecollection/github-deployments-buildkite-plugin.git",
+  "license": "MIT",
+  "scripts": {
+    "build:ts": "tsc",
+    "build:pkg": "pkg ./package.json",
+    "build": "yarn run build:ts && yarn run build:pkg",
+    "clean": "rimraf dist bin",
+    "prepare": "husky install"
+  },
+  "devDependencies": {
+    "@types/node": "^16.4.7",
+    "husky": "^7.0.1",
+    "lint-staged": "^11.1.1",
+    "pkg": "^5.3.1",
+    "prettier": "^2.3.2",
+    "rimraf": "^3.0.2",
+    "typescript": "^4.3.5"
+  },
+  "dependencies": {
+    "aws-sdk": "^2.957.0",
+    "octokit": "^1.1.0"
+  },
+  "lint-staged": {
+    "*.{js,css,md}": "prettier --write"
+  },
+  "pkg": {
+    "scripts": "./dist/**/*.js",
+    "targets": [
+      "node14-linux-x64"
+    ],
+    "outputPath": "bin"
+  }
+}
