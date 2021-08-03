@@ -8,4 +8,6 @@ configuration:
       type: string
     ref:
       type: string
+    assume_role:
+      type: string
   additionalProperties: false

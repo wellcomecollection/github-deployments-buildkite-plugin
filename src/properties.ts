@@ -11,4 +11,5 @@ export const environment = {
 export const config = {
   environment: process.env[envVar("environment")] || "stage",
   ref: process.env[envVar("ref")] || environment.commit,
+  assumeRole: process.env[envVar("assume_role")],
 };

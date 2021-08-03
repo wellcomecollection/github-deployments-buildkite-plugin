@@ -9,7 +9,7 @@ Add the following to your `pipeline.yml`:
 ```yml
 steps:
   - plugins:
-      - wellcomecollection/github-deployments#v0.1.2:
+      - wellcomecollection/github-deployments#v0.2.0:
           ref: ${BUILDKITE_COMMIT}
           environment: stage
 ```
@@ -23,6 +23,10 @@ The ref to create the deployment for as per https://docs.github.com/en/rest/refe
 ### `environment` (string, default `stage`)
 
 The environment to create the deployment for as per https://docs.github.com/en/rest/reference/repos#deployments
+
+### `assume_role` (string, optional)
+
+The ARN of the role for the plugin to assume when fetching secrets
 
 ## Development
 
