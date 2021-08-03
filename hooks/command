@@ -1,0 +1,20 @@
+#!/bin/bash
+set -euo pipefail
+
+# This is mostly copied from https://github.com/chronotc/monorepo-diff-buildkite-plugin/blob/master/hooks/command
+
+plugin=${BUILDKITE_PLUGINS:-""}
+version=$(echo $plugin | sed -e 's/.*github-deployments-buildkite-plugin//' -e 's/\".*//')
+repo="https://github.com/wellcomecollection/github-deployments-buildkite-plugin"
+executable="github-deployments-buildkite-plugin"
+
+if [ -z ${version} ]; then
+  url=${repo}/releases/latest/download/${executable}
+else
+  url=${repo}/releases/download/${version:1}/${executable}
+fi
+
+echo ${url}
+curl -Lf -o ${executable} $url && chmod +x ${executable}
+
+./${executable}
