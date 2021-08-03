@@ -1,6 +1,5 @@
 import AWS from "aws-sdk";
-import { createAppAuth, StrategyOptions } from "@octokit/auth-app";
-import { Octokit } from "@octokit/core";
+import { StrategyOptions } from "@octokit/auth-app";
 import { config } from "./properties";
 
 const authConfigSecrets = {
@@ -27,7 +26,7 @@ const getSecretsManager = async (role?: string) => {
   return new AWS.SecretsManager();
 };
 
-const getAppAuthConfig = async () => {
+export const getAppAuthConfig = async () => {
   const authConfig = { ...authConfigSecrets };
   const secretsManager = await getSecretsManager(config.assumeRole);
   for (const [configKey, secretId] of Object.entries(authConfigSecrets)) {
@@ -37,15 +36,4 @@ const getAppAuthConfig = async () => {
     authConfig[configKey as keyof typeof authConfig] = result["SecretString"]!;
   }
   return authConfig as StrategyOptions;
-};
-
-export const getAppOctokit = async () => {
-  const config = await getAppAuthConfig();
-  return (
-    config &&
-    new Octokit({
-      authStrategy: createAppAuth,
-      auth: config,
-    })
-  );
 };

@@ -1,14 +1,16 @@
 import { Octokit } from "@octokit/core";
 import gitUrlParse from "git-url-parse";
-import { getAppOctokit } from "./auth";
+import { getAppAuthConfig } from "./auth";
 import { config, environment } from "./properties";
+import { createAppAuth } from "@octokit/auth-app";
 
 const main = async () => {
   console.log("Fetching app config...");
-  const appOctokit = await getAppOctokit();
-  if (!appOctokit) {
-    throw new Error("Could not authenticate app");
-  }
+  const authOptions = await getAppAuthConfig();
+  const appOctokit = new Octokit({
+    authStrategy: createAppAuth,
+    auth: authOptions,
+  });
 
   const repo = gitUrlParse(environment.repo);
   const octokitOptions = { owner: repo.owner, repo: repo.name };
@@ -21,7 +23,11 @@ const main = async () => {
   const octokit = (await appOctokit.auth({
     type: "installation",
     installationId: installation.data.id,
-    factory: (opts: any) => new Octokit(opts),
+    factory: (factoryOptions: any) =>
+      new Octokit({
+        authStrategy: createAppAuth,
+        auth: factoryOptions,
+      }),
   })) as Octokit;
 
   console.log("Creating deployment...");
