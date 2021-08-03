@@ -37,7 +37,7 @@ const main = async () => {
     environment: config.environment,
     production_environment:
       config.environment === "prod" || config.environment === "production",
-    task: "deploy:weco",
+    task: config.task,
     auto_merge: false,
     required_contexts: [],
     mediaType: {

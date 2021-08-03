@@ -9,7 +9,7 @@ Add the following to your `pipeline.yml`:
 ```yml
 steps:
   - plugins:
-      - wellcomecollection/github-deployments#v0.2.2:
+      - wellcomecollection/github-deployments#v0.2.3:
           ref: ${BUILDKITE_COMMIT}
           environment: stage
 ```
@@ -27,6 +27,10 @@ The environment to create the deployment for as per https://docs.github.com/en/r
 ### `assume_role` (string, optional)
 
 The ARN of the role for the plugin to assume when fetching secrets
+
+### `task` (string, default `deploy:weco`)
+
+The name of the GitHub Deployment task - useful for distinguishing between different deploy types.
 
 ## Development
 
