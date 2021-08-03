@@ -1,0 +1,21 @@
+name: Build and publish plugin binaries
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+jobs:
+  build_and_publish:
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v2
+      - name: Build binaries
+        run: |
+          yarn install --frozen-lockfile
+          yarn build
+      - name: Create release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            bin/github-deployments-buildkite-plugin
+
