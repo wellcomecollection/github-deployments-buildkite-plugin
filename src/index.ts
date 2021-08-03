@@ -38,6 +38,8 @@ const main = async () => {
     production_environment:
       config.environment === "prod" || config.environment === "production",
     task: "deploy:weco",
+    auto_merge: false,
+    required_contexts: [],
     mediaType: {
       // See preview notice at https://docs.github.com/en/rest/reference/repos#deployments
       previews: ["ant-man-preview"],
