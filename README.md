@@ -9,7 +9,7 @@ Add the following to your `pipeline.yml`:
 ```yml
 steps:
   - plugins:
-      - wellcomecollection/github-deployments#v0.1.1:
+      - wellcomecollection/github-deployments#v0.1.2:
           ref: ${BUILDKITE_COMMIT}
           environment: stage
 ```
