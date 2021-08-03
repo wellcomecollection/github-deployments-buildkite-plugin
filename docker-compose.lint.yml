@@ -1,0 +1,7 @@
+#  https://buildkite.com/docs/plugins/writing#step-3-validate-the-plugin-dot-yml
+services:
+  lint:
+    image: buildkite/plugin-linter
+    command: ['--id', 'wellcomecollection/github-deployments']
+    volumes:
+      - ".:/plugin:ro"

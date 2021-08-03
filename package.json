@@ -11,7 +11,8 @@
     "build": "yarn run build:ts && yarn run build:pkg",
     "clean": "rimraf dist bin",
     "prepare": "husky install",
-    "dev": "ts-node src/index.ts"
+    "dev": "ts-node src/index.ts",
+    "lint-plugin": "docker-compose -f ./docker-compose.lint.yml run --rm lint"
   },
   "devDependencies": {
     "@types/git-url-parse": "^9.0.1",
