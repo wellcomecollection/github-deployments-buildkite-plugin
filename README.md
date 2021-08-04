@@ -9,7 +9,7 @@ Add the following to your `pipeline.yml`:
 ```yml
 steps:
   - plugins:
-      - wellcomecollection/github-deployments#v0.2.3:
+      - wellcomecollection/github-deployments#v0.2.4:
           ref: ${BUILDKITE_COMMIT}
           environment: stage
 ```
@@ -35,3 +35,7 @@ The name of the GitHub Deployment task - useful for distinguishing between diffe
 ## Development
 
 The plugin is written in Typescript and compiled into binaries with https://github.com/vercel/pkg - when you push a tag, a GitHub action will create a release for you.
+
+## Secrets module
+
+The terraform module in `secrets` can be used to create the secrets that the plugin requires (for storing GitHub App config), and provides an output of an IAM policy document for accessing those secrets.
