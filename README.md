@@ -4,7 +4,7 @@ A Buildkite plugin for managing GitHub deployments
 
 ## Example
 
-Add the following to your `pipeline.yml`:
+Add the following to your `pipeline.yml` - this will create a deployment for the current commit in the `stage` environment:
 
 ```yml
 steps:
