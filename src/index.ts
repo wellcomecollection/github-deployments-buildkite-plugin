@@ -44,6 +44,7 @@ const main = async () => {
       // See preview notice at https://docs.github.com/en/rest/reference/repos#deployments
       previews: ["ant-man-preview"],
     },
+    description: config.description,
   });
 
   if (res.status === 201) {

@@ -8,9 +8,12 @@ export const environment = {
   repo: process.env.BUILDKITE_REPO!,
 };
 
+const environmentName = process.env[envVar("environment")] || "stage";
+
 export const config = {
-  environment: process.env[envVar("environment")] || "stage",
+  environment: environmentName,
   ref: process.env[envVar("ref")] || environment.commit,
   assumeRole: process.env[envVar("assume_role")],
   task: process.env[envVar("task")] || "deploy:weco",
+  description: `Deployment (${environmentName})`,
 };
