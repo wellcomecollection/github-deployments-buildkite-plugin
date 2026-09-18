@@ -14,7 +14,7 @@ steps:
           environment: stage
 ```
 
-The id of the deployment is written to build meta-data under `github_deployment:<environment>:id`, so later steps in the same build can post statuses against it without being told which deployment they are reporting on.
+The id of the deployment is written to build meta-data under `github_deployment:<environment>:<task>:id`, so later steps in the same build can post statuses against it without being told which deployment they are reporting on.
 
 ## Posting deployment statuses
 
