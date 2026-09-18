@@ -1,20 +1,27 @@
 #!/bin/bash
 set -euo pipefail
 
-# This is mostly copied from https://github.com/chronotc/monorepo-diff-buildkite-plugin/blob/master/hooks/command
+DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "${DIR}/../lib/plugin.bash"
 
-plugin=${BUILDKITE_PLUGINS:-""}
-version=$(echo $plugin | sed -e 's/.*github-deployments-buildkite-plugin//' -e 's/\".*//')
-repo="https://github.com/wellcomecollection/github-deployments-buildkite-plugin"
-executable="github-deployments-buildkite-plugin"
+reject_invalid_config
 
-if [ -z ${version} ]; then
-  url=${repo}/releases/latest/download/${executable}
-else
-  url=${repo}/releases/download/${version:1}/${executable}
+# A plugin's command hook replaces the step's command, the way the docker
+# plugin runs yours inside a container. In wrapper mode the step has a real
+# command and this has to run it, or it never runs at all.
+if wrapping_command; then
+  if [ -z "${BUILDKITE_COMMAND:-}" ]; then
+    echo "wrap is true but this step has no command to wrap" >&2
+    exit 1
+  fi
+
+  # The agent's own shell, so a wrapped step runs the same way an unwrapped one
+  # does. Running the command here instead would report success for a multi-line
+  # command whose earlier line failed, and would impose this hook's set -u on it.
+  # Unquoted on purpose: BUILDKITE_SHELL holds a command and its flags.
+  command_status=0
+  ${BUILDKITE_SHELL:-/bin/bash -e -c} "${BUILDKITE_COMMAND}" || command_status=$?
+  exit ${command_status}
 fi
 
-echo ${url}
-curl -Lf -o ${executable} $url && chmod +x ${executable}
-
-./${executable}
+run_plugin command

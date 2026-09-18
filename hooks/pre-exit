@@ -1,0 +1,30 @@
+#!/bin/bash
+set -uo pipefail
+
+DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "${DIR}/../lib/plugin.bash"
+
+if ! wrapping_command; then
+  exit 0
+fi
+
+# Checked here as well as in the binary so a step that needs no status skips the
+# download. A recorded zero is a success. No recorded status at all means the job
+# died before its command phase, and only a deployment this job created itself
+# may be failed then: the build's most recent one can belong to an earlier step
+# that deployed successfully.
+if [ "${BUILDKITE_COMMAND_EXIT_STATUS:-}" == "0" ]; then
+  exit 0
+fi
+
+if [ -z "${BUILDKITE_COMMAND_EXIT_STATUS:-}" ] &&
+   [ ! -f "${TMPDIR:-/tmp}/github-deployment-${BUILDKITE_JOB_ID:-none}" ]; then
+  exit 0
+fi
+
+if ! run_plugin pre-exit; then
+  echo "Could not post a failure status for this deployment" >&2
+fi
+
+# Always succeed: the command has already failed and that is the failure to report.
+exit 0
