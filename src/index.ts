@@ -1,5 +1,6 @@
 import { createDeployment, createDeploymentStatus } from "./deployments";
 import { config, environment, validateConfig } from "./properties";
+import { getJobDeploymentId } from "./metadata";
 
 const hooks = ["command", "pre-command", "pre-exit"] as const;
 
@@ -47,8 +48,15 @@ const runPreExitHook = async () => {
   if (exitStatus === "0") {
     return;
   }
+  // With no status the job died before its command phase, so it may have made
+  // no deployment at all. Failing the build's most recent one would report an
+  // earlier step's successful deploy as broken.
+  if (exitStatus === undefined && !getJobDeploymentId()) {
+    console.log("This job created no deployment, so there is nothing to fail");
+    return;
+  }
   console.log(`Command exited with ${exitStatus ?? "no recorded status"}`);
-  await createDeploymentStatus("failure");
+  await createDeploymentStatus("failure", true);
 };
 
 const main = async () => {

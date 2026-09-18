@@ -1,4 +1,6 @@
 import { execFileSync } from "child_process";
+import { writeFileSync, readFileSync, existsSync } from "fs";
+import { join } from "path";
 
 // Meta-data is scoped to the build, so the key has to tell apart every
 // deployment one build can make: stage then prod, two tasks to one environment,
@@ -43,5 +45,46 @@ export const getDeploymentId = (environment: string, task: string): string => {
     throw new Error(
       `Could not read build meta-data ${key}, so there is no deployment to post a status to. Either create the deployment earlier in this build or pass the deployment_id option. The underlying error was: ${error}`
     );
+  }
+};
+
+// Written by the job that creates the deployment, for the pre-exit hook of that
+// same job. Build meta-data cannot serve this: it is shared by every step, so a
+// job that died before its own command would find an earlier step's deployment
+// and report that one as failed.
+export const jobDeploymentPath = (): string | undefined => {
+  const jobId = process.env.BUILDKITE_JOB_ID;
+  if (!jobId) {
+    return undefined;
+  }
+  return join(process.env.TMPDIR || "/tmp", `github-deployment-${jobId}`);
+};
+
+export const setJobDeploymentId = (deploymentId: number) => {
+  const path = jobDeploymentPath();
+  if (!path) {
+    return;
+  }
+  try {
+    writeFileSync(path, String(deploymentId));
+  } catch (error) {
+    console.error(
+      `Could not record this job's deployment at ${path}: ${error}`
+    );
+  }
+};
+
+export const getJobDeploymentId = (): string | undefined => {
+  const path = jobDeploymentPath();
+  if (!path || !existsSync(path)) {
+    return undefined;
+  }
+  try {
+    return readFileSync(path, { encoding: "utf8" }).trim();
+  } catch (error) {
+    console.error(
+      `Could not read this job's deployment from ${path}: ${error}`
+    );
+    return undefined;
   }
 };

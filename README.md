@@ -48,7 +48,9 @@ Wrapper mode only makes sense on a step that has a command of its own. Without `
 
 A plugin's `command` hook replaces the step's command, so in wrapper mode this plugin runs the step's command itself, in a fresh `bash -e -c` matching the agent's own default. Buildkite runs only the first `command` hook it finds, and nothing here checks for a second one, so putting wrapper mode on the same step as another plugin that provides one, such as `docker` or `docker-compose`, gives you whichever comes first in the step's plugin list and drops the other. Plugins that only contribute an environment, such as `aws-assume-role`, are fine on the same step.
 
-`wrap` and `status` are rejected together. Wrapper mode posts `in_progress` and `failure` around the command, so a `status` on the same step would never be sent.
+`wrap` and `status` are rejected together, by the hooks rather than the binary, so the step fails rather than warning. Wrapper mode posts `in_progress` and `failure` around the command, so a `status` on the same step would never be sent.
+
+The command runs under `BUILDKITE_SHELL`, defaulting to `/bin/bash -e -c` as the agent does. An agent started with `--no-command-eval` refuses to evaluate a step's command, and wrapper mode does evaluate it, so the two do not go together.
 
 Under `parallelism` each job wraps its own command and gets its own deployment, since the meta-data key includes the parallel job index.
 
@@ -68,7 +70,7 @@ The ARN of the role for the plugin to assume when fetching secrets. A string, op
 
 ### `task`
 
-The name of the GitHub Deployment task, useful for distinguishing between different deploy types. A string, defaulting to `deploy:weco`.
+The name of the GitHub Deployment task, useful for distinguishing between different deploy types. A string, defaulting to `deploy:weco`. It is part of the meta-data key, so a step creating a deployment and a later step posting a status to it must agree on it. Setting `task` on one of the pair and not the other leaves the second looking for a key that was never written.
 
 ### `status`
 

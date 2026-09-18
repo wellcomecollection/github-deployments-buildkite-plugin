@@ -4,7 +4,9 @@ set -euo pipefail
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "${DIR}/../lib/plugin.bash"
 
-# A plugin's command hook replaces the step's own command, the way the docker
+reject_invalid_config
+
+# A plugin's command hook replaces the step's command, the way the docker
 # plugin runs yours inside a container. In wrapper mode the step has a real
 # command and this has to run it, or it never runs at all.
 if wrapping_command; then
@@ -13,11 +15,12 @@ if wrapping_command; then
     exit 1
   fi
 
-  # A fresh shell, matching the agent's own default of bash -e -c. Running it
-  # here instead would report success for a multi-line command whose earlier
-  # line failed, and would impose this hook's set -u on it.
+  # The agent's own shell, so a wrapped step runs the same way an unwrapped one
+  # does. Running the command here instead would report success for a multi-line
+  # command whose earlier line failed, and would impose this hook's set -u on it.
+  # Unquoted on purpose: BUILDKITE_SHELL holds a command and its flags.
   command_status=0
-  /bin/bash -e -c "${BUILDKITE_COMMAND}" || command_status=$?
+  ${BUILDKITE_SHELL:-/bin/bash -e -c} "${BUILDKITE_COMMAND}" || command_status=$?
   exit ${command_status}
 fi
 

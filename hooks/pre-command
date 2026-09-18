@@ -4,6 +4,8 @@ set -uo pipefail
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "${DIR}/../lib/plugin.bash"
 
+reject_invalid_config
+
 if ! wrapping_command; then
   exit 0
 fi

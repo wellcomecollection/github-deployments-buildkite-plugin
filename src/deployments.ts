@@ -3,7 +3,12 @@ import gitUrlParse from "git-url-parse";
 import { createAppAuth } from "@octokit/auth-app";
 import { getAppAuthConfig } from "./auth";
 import { config, DeploymentState, environment } from "./properties";
-import { getDeploymentId, setDeploymentId } from "./metadata";
+import {
+  getDeploymentId,
+  setDeploymentId,
+  setJobDeploymentId,
+  getJobDeploymentId,
+} from "./metadata";
 
 type RepoOptions = { owner: string; repo: string };
 
@@ -66,13 +71,19 @@ export const createDeployment = async () => {
 
   console.log(`Created deployment at ${res.data.url}`);
   setDeploymentId(config.environment, config.task, res.data.id);
+  setJobDeploymentId(res.data.id);
   return res.data.id;
 };
 
-export const createDeploymentStatus = async (state: DeploymentState) => {
+export const createDeploymentStatus = async (
+  state: DeploymentState,
+  preferThisJob = false
+) => {
   // Read the id before authenticating so a missing deployment fails quickly.
   const raw =
-    config.deploymentId || getDeploymentId(config.environment, config.task);
+    config.deploymentId ||
+    (preferThisJob ? getJobDeploymentId() : undefined) ||
+    getDeploymentId(config.environment, config.task);
   // Greater than zero, not merely integral: Number("") is 0, so a blank
   // meta-data value would otherwise be posted against deployment 0.
   const deploymentId = Number(raw);
