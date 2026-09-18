@@ -1,5 +1,5 @@
 import { createDeployment, createDeploymentStatus } from "./deployments";
-import { config, environment } from "./properties";
+import { config, environment, validateConfig } from "./properties";
 
 const hooks = ["command", "pre-command", "pre-exit"] as const;
 
@@ -20,8 +20,10 @@ const runCommandHook = async () => {
   if (config.status) {
     return createDeploymentStatus(config.status);
   }
+  // Not reached through the hooks: in wrapper mode the command hook runs the
+  // step's command instead of the binary. Here for a direct invocation.
   if (config.wrap) {
-    console.log("Wrapping the step command, the pre-command hook has run");
+    console.log("Wrapping the step command, nothing to do in the command hook");
     return;
   }
   await createDeployment();
@@ -39,16 +41,19 @@ const runPreExitHook = async () => {
   if (!config.wrap) {
     return;
   }
+  // Only a recorded zero is success. An unset status means the command never
+  // reported one, and a deployment left at in_progress is never resolved.
   const exitStatus = environment.commandExitStatus;
-  if (!exitStatus || exitStatus === "0") {
+  if (exitStatus === "0") {
     return;
   }
-  console.log(`Command exited with ${exitStatus}`);
+  console.log(`Command exited with ${exitStatus ?? "no recorded status"}`);
   await createDeploymentStatus("failure");
 };
 
 const main = async () => {
   const hook = readHook();
+  validateConfig();
   switch (hook) {
     case "command":
       return runCommandHook();

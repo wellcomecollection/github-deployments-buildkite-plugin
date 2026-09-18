@@ -44,3 +44,13 @@ export const config = {
   description:
     process.env[envVar("description")] || `Deployment (${environmentName})`,
 };
+
+// Called once at startup rather than at import, so the message reaches the log
+// as an error rather than an uncaught stack trace.
+export const validateConfig = () => {
+  if (config.wrap && config.status) {
+    throw new Error(
+      `wrap and status cannot be combined: wrap posts in_progress and failure around the step's own command, so the "${config.status}" status would never be sent. Use one or the other.`
+    );
+  }
+};

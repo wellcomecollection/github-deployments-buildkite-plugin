@@ -46,7 +46,11 @@ The first step above is in wrapper mode. With `wrap: true` the plugin creates th
 
 Wrapper mode only makes sense on a step that has a command of its own. Without `wrap: true` the `pre-command` and `pre-exit` hooks do nothing, so a step that only creates a deployment behaves as it always has.
 
-A plugin's `command` hook replaces the step's command, so in wrapper mode this plugin runs the step's command itself. Buildkite runs only the first `command` hook it finds, so wrapper mode cannot be combined on one step with another plugin that provides one, such as `docker` or `docker-compose`. Plugins that only contribute an environment, such as `aws-assume-role`, are fine.
+A plugin's `command` hook replaces the step's command, so in wrapper mode this plugin runs the step's command itself, in a fresh `bash -e -c` matching the agent's own default. Buildkite runs only the first `command` hook it finds, and nothing here checks for a second one, so putting wrapper mode on the same step as another plugin that provides one, such as `docker` or `docker-compose`, gives you whichever comes first in the step's plugin list and drops the other. Plugins that only contribute an environment, such as `aws-assume-role`, are fine on the same step.
+
+`wrap` and `status` are rejected together. Wrapper mode posts `in_progress` and `failure` around the command, so a `status` on the same step would never be sent.
+
+Under `parallelism` each job wraps its own command and gets its own deployment, since the meta-data key includes the parallel job index.
 
 ## Configuration
 
@@ -72,7 +76,7 @@ The status to post against an existing deployment, one of `in_progress`, `succes
 
 ### `deployment_id`
 
-The id of the deployment to post a status to. A string, optional. When it is not set the plugin reads the id from build meta-data under `github_deployment:<environment>:id`, which is where it wrote the id when it created the deployment.
+The id of the deployment to post a status to. A string or integer, optional. When it is not set the plugin reads the id from build meta-data under `github_deployment:<environment>:<task>:id`, which is where it wrote the id when it created the deployment. Under `parallelism` the key gains a `:<index>` before `:id`, so parallel jobs do not overwrite each other.
 
 ### `environment_url`
 

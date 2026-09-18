@@ -8,8 +8,11 @@ if ! wrapping_command; then
   exit 0
 fi
 
+# Only a recorded zero means success. An unset exit status means the command
+# never reported one, and leaving the deployment at in_progress for good is
+# worse than calling a deploy failed that might have worked.
 # Checked here as well as in the binary so a successful step skips the download.
-if [ -z "${BUILDKITE_COMMAND_EXIT_STATUS:-}" ] || [ "${BUILDKITE_COMMAND_EXIT_STATUS}" == "0" ]; then
+if [ "${BUILDKITE_COMMAND_EXIT_STATUS:-}" == "0" ]; then
   exit 0
 fi
 

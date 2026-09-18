@@ -19,7 +19,7 @@ configuration:
         - success
         - failure
     deployment_id:
-      type: string
+      type: [string, integer]
     environment_url:
       type: string
     log_url:

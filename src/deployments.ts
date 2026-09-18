@@ -65,17 +65,19 @@ export const createDeployment = async () => {
   }
 
   console.log(`Created deployment at ${res.data.url}`);
-  setDeploymentId(config.environment, res.data.id);
+  setDeploymentId(config.environment, config.task, res.data.id);
   return res.data.id;
 };
 
 export const createDeploymentStatus = async (state: DeploymentState) => {
   // Read the id before authenticating so a missing deployment fails quickly.
-  const deploymentId = Number(
-    config.deploymentId || getDeploymentId(config.environment)
-  );
-  if (!Number.isInteger(deploymentId)) {
-    throw new Error(`Deployment id is not a number: ${deploymentId}`);
+  const raw =
+    config.deploymentId || getDeploymentId(config.environment, config.task);
+  // Greater than zero, not merely integral: Number("") is 0, so a blank
+  // meta-data value would otherwise be posted against deployment 0.
+  const deploymentId = Number(raw);
+  if (!Number.isInteger(deploymentId) || deploymentId <= 0) {
+    throw new Error(`Deployment id is not a positive whole number: "${raw}"`);
   }
 
   const [octokit, octokitOptions] = await getClient();

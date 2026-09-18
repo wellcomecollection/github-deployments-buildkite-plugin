@@ -13,10 +13,11 @@ if wrapping_command; then
     exit 1
   fi
 
-  set +e
-  eval "${BUILDKITE_COMMAND}"
-  command_status=$?
-  set -e
+  # A fresh shell, matching the agent's own default of bash -e -c. Running it
+  # here instead would report success for a multi-line command whose earlier
+  # line failed, and would impose this hook's set -u on it.
+  command_status=0
+  /bin/bash -e -c "${BUILDKITE_COMMAND}" || command_status=$?
   exit ${command_status}
 fi
 

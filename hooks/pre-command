@@ -1,5 +1,5 @@
 #!/bin/bash
-set -euo pipefail
+set -uo pipefail
 
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "${DIR}/../lib/plugin.bash"
@@ -8,4 +8,11 @@ if ! wrapping_command; then
   exit 0
 fi
 
-run_plugin pre-command
+# Tolerated rather than fatal: this hook only announces the deploy, and failing
+# to announce one is not a reason to stop it happening. Without a deployment the
+# pre-exit hook has nothing to post to, and says so.
+if ! run_plugin pre-command; then
+  echo "Could not create a deployment for this step, continuing anyway" >&2
+fi
+
+exit 0
