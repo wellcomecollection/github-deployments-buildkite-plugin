@@ -4,4 +4,20 @@ set -euo pipefail
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "${DIR}/../lib/plugin.bash"
 
+# A plugin's command hook replaces the step's own command, the way the docker
+# plugin runs yours inside a container. In wrapper mode the step has a real
+# command and this has to run it, or it never runs at all.
+if wrapping_command; then
+  if [ -z "${BUILDKITE_COMMAND:-}" ]; then
+    echo "wrap is true but this step has no command to wrap" >&2
+    exit 1
+  fi
+
+  set +e
+  eval "${BUILDKITE_COMMAND}"
+  command_status=$?
+  set -e
+  exit ${command_status}
+fi
+
 run_plugin command

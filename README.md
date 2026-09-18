@@ -46,6 +46,8 @@ The first step above is in wrapper mode. With `wrap: true` the plugin creates th
 
 Wrapper mode only makes sense on a step that has a command of its own. Without `wrap: true` the `pre-command` and `pre-exit` hooks do nothing, so a step that only creates a deployment behaves as it always has.
 
+A plugin's `command` hook replaces the step's command, so in wrapper mode this plugin runs the step's command itself. Buildkite runs only the first `command` hook it finds, so wrapper mode cannot be combined on one step with another plugin that provides one, such as `docker` or `docker-compose`. Plugins that only contribute an environment, such as `aws-assume-role`, are fine.
+
 ## Configuration
 
 ### `ref`
