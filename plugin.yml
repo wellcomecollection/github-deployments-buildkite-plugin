@@ -12,4 +12,20 @@ configuration:
       type: string
     task:
       type: string
+    status:
+      type: string
+      enum:
+        - in_progress
+        - success
+        - failure
+    deployment_id:
+      type: string
+    environment_url:
+      type: string
+    log_url:
+      type: string
+    description:
+      type: string
+    wrap:
+      type: boolean
   additionalProperties: false

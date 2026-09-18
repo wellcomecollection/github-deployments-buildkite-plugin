@@ -1,0 +1,21 @@
+#!/bin/bash
+set -uo pipefail
+
+DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "${DIR}/../lib/plugin.bash"
+
+if ! wrapping_command; then
+  exit 0
+fi
+
+# Checked here as well as in the binary so a successful step skips the download.
+if [ -z "${BUILDKITE_COMMAND_EXIT_STATUS:-}" ] || [ "${BUILDKITE_COMMAND_EXIT_STATUS}" == "0" ]; then
+  exit 0
+fi
+
+if ! run_plugin pre-exit; then
+  echo "Could not post a failure status for this deployment" >&2
+fi
+
+# Always succeed: the command has already failed and that is the failure to report.
+exit 0

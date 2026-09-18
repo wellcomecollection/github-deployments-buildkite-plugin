@@ -1,58 +1,61 @@
-import { Octokit } from "@octokit/core";
-import gitUrlParse from "git-url-parse";
-import { getAppAuthConfig } from "./auth";
+import { createDeployment, createDeploymentStatus } from "./deployments";
 import { config, environment } from "./properties";
-import { createAppAuth } from "@octokit/auth-app";
+
+const hooks = ["command", "pre-command", "pre-exit"] as const;
+
+type Hook = typeof hooks[number];
+
+// Each hook script passes its own name, so one binary serves all three.
+const readHook = (): Hook => {
+  const hook = process.argv[2] || "command";
+  if (!hooks.includes(hook as Hook)) {
+    throw new Error(
+      `Unknown hook "${hook}", expected one of: ${hooks.join(", ")}`
+    );
+  }
+  return hook as Hook;
+};
+
+const runCommandHook = async () => {
+  if (config.status) {
+    return createDeploymentStatus(config.status);
+  }
+  if (config.wrap) {
+    console.log("Wrapping the step command, the pre-command hook has run");
+    return;
+  }
+  await createDeployment();
+};
+
+const runPreCommandHook = async () => {
+  if (!config.wrap) {
+    return;
+  }
+  await createDeployment();
+  await createDeploymentStatus("in_progress");
+};
+
+const runPreExitHook = async () => {
+  if (!config.wrap) {
+    return;
+  }
+  const exitStatus = environment.commandExitStatus;
+  if (!exitStatus || exitStatus === "0") {
+    return;
+  }
+  console.log(`Command exited with ${exitStatus}`);
+  await createDeploymentStatus("failure");
+};
 
 const main = async () => {
-  console.log("Fetching app config...");
-  const authOptions = await getAppAuthConfig();
-  const appOctokit = new Octokit({
-    authStrategy: createAppAuth,
-    auth: authOptions,
-  });
-
-  const repo = gitUrlParse(environment.repo);
-  const octokitOptions = { owner: repo.owner, repo: repo.name };
-
-  console.log(`Finding app installation for repo: ${repo.name}`);
-  const installation = await appOctokit.request(
-    "GET /repos/{owner}/{repo}/installation",
-    octokitOptions
-  );
-  const octokit = (await appOctokit.auth({
-    type: "installation",
-    installationId: installation.data.id,
-    factory: (factoryOptions: any) =>
-      new Octokit({
-        authStrategy: createAppAuth,
-        auth: factoryOptions,
-      }),
-  })) as Octokit;
-
-  console.log("Creating deployment...");
-  const res = await octokit.request("POST /repos/{owner}/{repo}/deployments", {
-    ...octokitOptions,
-    ref: config.ref,
-    environment: config.environment,
-    production_environment:
-      config.environment === "prod" || config.environment === "production",
-    task: config.task,
-    auto_merge: false,
-    required_contexts: [],
-    mediaType: {
-      // See preview notice at https://docs.github.com/en/rest/reference/repos#deployments
-      previews: ["ant-man-preview"],
-    },
-    description: config.description,
-  });
-
-  if (res.status === 201) {
-    console.log(`Created deployment at ${res.data.url}`);
-  } else {
-    throw new Error(
-      `Failed to create deployment: ${res.status} ${res.data.message}`
-    );
+  const hook = readHook();
+  switch (hook) {
+    case "command":
+      return runCommandHook();
+    case "pre-command":
+      return runPreCommandHook();
+    case "pre-exit":
+      return runPreExitHook();
   }
 };
 
