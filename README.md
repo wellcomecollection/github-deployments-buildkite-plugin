@@ -9,7 +9,7 @@ Add the following to your `pipeline.yml`, which will create a deployment for the
 ```yml
 steps:
   - plugins:
-      - wellcomecollection/github-deployments#v0.4.0:
+      - wellcomecollection/github-deployments#v0.4.1:
           ref: ${BUILDKITE_COMMIT}
           environment: stage
 ```
@@ -25,7 +25,7 @@ steps:
   - label: Deploy to stage
     command: ./deploy.sh stage
     plugins:
-      - wellcomecollection/github-deployments#v0.4.0:
+      - wellcomecollection/github-deployments#v0.4.1:
           environment: stage
           wrap: true
 
@@ -36,7 +36,7 @@ steps:
 
   - label: Report the stage deploy
     plugins:
-      - wellcomecollection/github-deployments#v0.4.0:
+      - wellcomecollection/github-deployments#v0.4.1:
           environment: stage
           status: success
           environment_url: https://api-stage.wellcomecollection.org
