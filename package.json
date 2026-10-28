@@ -29,7 +29,7 @@
     "@octokit/auth-app": "^3.5.3",
     "@octokit/core": "^3.5.1",
     "aws-sdk": "^2.957.0",
-    "git-url-parse": "^11.5.0"
+    "git-url-parse": "^13.1.1"
   },
   "lint-staged": {
     "*.{js,css,md}": "prettier --write"
